@@ -6,6 +6,7 @@
 #define DRAWING_BOARD_H
 
 #include <string>
+#include <vector>
 
 class drawing_board {
  private:
@@ -13,7 +14,9 @@ class drawing_board {
   int height_{10};
   int w_index_{0};
   int h_index_{0};
-  drawing_board() = default;
+  std::vector<std::string> buffer_;
+  drawing_board() : buffer_(height_, std::string(width_, ' ')) {
+  }
 
  public:
   static drawing_board* get_instance() {
@@ -44,10 +47,13 @@ class drawing_board {
   void set(const int width, const int height) {
     width_  = width;
     height_ = height;
+    buffer_.resize(height_, std::string(width_, ' '));
   }
-  void draw_done() {
-    w_index_ = 0;
-    h_index_ = 0;
+
+  void draw_done() const {
+    for (const auto& e : buffer_) {
+      printf("%s\n", e.c_str());
+    }
   }
 };
 

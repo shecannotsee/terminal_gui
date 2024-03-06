@@ -24,22 +24,24 @@ class menu {
   }
 
   void homepage(const int page_option) {
+    auto buffer = drawing_board::get_instance();
     using namespace std;
-    cout << "Use arrow keys to select an option:\n";
+    buffer->draw_ln("Use arrow keys to select an option:");
     for (int i = 0; i < 3; ++i) {
       if (i == page_option)
-        cout << "> ";
+        buffer->draw("> ");
       else
-        cout << "  ";
+        buffer->draw("  ");
+
       switch (i) {
         case 0:
-          cout << "Option 1\n";
+          buffer->draw_ln("Option 1");
           break;
         case 1:
-          cout << "Option 2\n";
+          buffer->draw_ln("Option 2");
           break;
         case 2:
-          cout << "Exit\n";
+          buffer->draw_ln("Exit");
           break;
         default:
           break;
