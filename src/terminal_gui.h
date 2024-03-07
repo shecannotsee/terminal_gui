@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include <iostream>
-#include <thread>
 
 #include "cursor_move.h"
 #include "drawing_board.h"
@@ -55,15 +54,83 @@ class terminal_gui {
   void start() {
     clear_screen();
     auto buffer = drawing_board::get_instance();
-    buffer->draw_ln("Welcome to the terminal_gui program.");
+    buffer->draw_info("Welcome to the terminal_gui program.");
     menu main_menu;
     while (true) {
-      static int page        = 0;
-      static int page_option = 0;
-      main_menu.display(page, page_option);
-      auto status     = get_keyboard_events();
-      auto status_str = magic_enum::enum_name(status);
-      std::cout << status_str << std::endl;
+      cursor_move::to_terminal_start();
+      static auto now_page        = page::homepage;
+      static auto now_page_option = page_opt::option1;
+      buffer->draw_debug(":" + std::string(magic_enum::enum_name(now_page)) + ":" +
+                         std::string(magic_enum::enum_name(now_page_option)));
+      try {
+        main_menu.display(now_page, now_page_option);
+      } catch (...) {
+        clear_screen();
+        printf("Exit program terminal_gui\n");
+        break;
+      }
+      const auto status = get_keyboard_events();
+      buffer->draw_echo("[" + std::string(magic_enum::enum_name(status)) + "]");
+      switch (status) {
+        case keyboard_events::step_into: {
+          if (now_page == page::homepage) {
+            if (now_page_option == page_opt::option1) {
+              now_page        = page::option1;
+              now_page_option = page_opt::null;
+            } else if (now_page_option == page_opt::option2) {
+              now_page        = page::option2;
+              now_page_option = page_opt::null;
+            } else if (now_page_option == page_opt::exit) {
+              now_page        = page::exit;
+              now_page_option = page_opt::null;
+            }
+          }
+          break;
+        }
+        case keyboard_events::step_out: {
+          if (now_page != page::homepage) {
+            if (now_page == page::option1) {
+              now_page        = page::homepage;
+              now_page_option = page_opt::option1;
+            } else if (now_page == page::option2) {
+              now_page        = page::homepage;
+              now_page_option = page_opt::option2;
+            }
+          }
+          break;
+        }
+        case keyboard_events::select_up: {
+          if (now_page == page::homepage) {
+            if (now_page_option == page_opt::option2) {
+              now_page_option = page_opt::option1;
+            } else if (now_page_option == page_opt::exit) {
+              now_page_option = page_opt::option2;
+            }
+          }
+          break;
+        }
+        case keyboard_events::select_down: {
+          if (now_page == page::homepage) {
+            if (now_page_option == page_opt::option1) {
+              now_page_option = page_opt::option2;
+            } else if (now_page_option == page_opt::option2) {
+              now_page_option = page_opt::exit;
+            }
+          }
+          break;
+        }
+        case keyboard_events::quit: {
+          return;
+          break;
+        }
+        case keyboard_events::invalid_key: {
+          buffer->draw_info("Invalid key");
+          break;
+        }
+        default: {
+          break;
+        }
+      }
     }
   }
 
